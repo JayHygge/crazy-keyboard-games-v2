@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import Image from "next/image";
 
 // Type for a game
 interface Game {
@@ -21,11 +22,13 @@ function GameCard({
   isFavorite,
   onToggleFavorite,
   onPlay,
+  onCardClick,
 }: {
   game: Game;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
   onPlay?: (id: string) => void;
+  onCardClick?: (game: Game) => void;
 }) {
   function handlePlay(e: React.MouseEvent) {
     if (onPlay) {
@@ -43,16 +46,35 @@ function GameCard({
         className="block bg-white/80 rounded-lg shadow hover:shadow-lg transition overflow-hidden"
         onClick={onPlay ? handlePlay : undefined}
       >
-        <img
+        <Image
           src={game.thumb}
           alt={game.title}
           className="w-full h-32 object-cover group-hover:scale-105 transition cursor-pointer"
           width={256}
           height={128}
           loading="lazy"
+          onClick={
+            onCardClick
+              ? (e) => {
+                  e.preventDefault();
+                  onCardClick(game);
+                }
+              : undefined
+          }
+          unoptimized
         />
         <div className="p-3">
-          <h3 className="font-semibold text-base mb-1 truncate cursor-pointer">
+          <h3
+            className="font-semibold text-base mb-1 truncate cursor-pointer"
+            onClick={
+              onCardClick
+                ? (e) => {
+                    e.preventDefault();
+                    onCardClick(game);
+                  }
+                : undefined
+            }
+          >
             {game.title}
           </h3>
           <p className="text-xs text-gray-500 truncate">{game.category}</p>
@@ -83,6 +105,8 @@ export default function Home() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [gamesData, setGamesData] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [modalGame, setModalGame] = useState<Game | null>(null);
 
   useEffect(() => {
     // Get up to 4 recently played game IDs from localStorage
@@ -136,8 +160,7 @@ export default function Home() {
   }
 
   function handleCategoryClick(category: string) {
-    // For now, just log the category
-    console.log("Category clicked:", category);
+    setActiveCategory(category === activeCategory ? "" : category);
   }
 
   function dismissCookie() {
@@ -191,6 +214,60 @@ export default function Home() {
       return games;
     });
   }
+
+  // Filtered games for each section
+  const filteredPopularGames = useMemo(() => {
+    let games = popularGames;
+    if (activeCategory)
+      games = games.filter((g) => g.category === activeCategory);
+    if (!search.trim()) return games;
+    return games.filter(
+      (g) =>
+        g.title.toLowerCase().includes(search.toLowerCase()) ||
+        g.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, popularGames, activeCategory]);
+
+  const filteredRecentlyPlayed = useMemo(() => {
+    let games = recentlyPlayed;
+    if (activeCategory)
+      games = games.filter((g) => g.category === activeCategory);
+    if (!search.trim()) return games;
+    return games.filter(
+      (g) =>
+        g.title.toLowerCase().includes(search.toLowerCase()) ||
+        g.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, recentlyPlayed, activeCategory]);
+
+  const filteredFavoriteGames = useMemo(() => {
+    let games = favoriteGames;
+    if (activeCategory)
+      games = games.filter((g) => g.category === activeCategory);
+    if (!search.trim()) return games;
+    return games.filter(
+      (g) =>
+        g.title.toLowerCase().includes(search.toLowerCase()) ||
+        g.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, favoriteGames, activeCategory]);
+
+  function handleGameCardClick(game: Game) {
+    setModalGame(game);
+  }
+
+  function closeModal() {
+    setModalGame(null);
+  }
+
+  useEffect(() => {
+    if (!modalGame) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeModal();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalGame]);
 
   if (loading) return <div className="text-center py-10">Loading games...</div>;
 
@@ -253,29 +330,31 @@ export default function Home() {
       {/* Recently Played */}
       <section id="recent" className="max-w-5xl mx-auto w-full py-10 px-4">
         <h2 className="text-2xl font-bold mb-4">Recently Played</h2>
-        {recentlyPlayed.length === 0 ? (
+        {filteredRecentlyPlayed.length === 0 ? (
           <div className="bg-white/60 rounded-xl shadow p-6 min-h-[120px] flex items-center justify-center text-gray-500">
-            <span>
-              No games played yet. Start playing to see your recent games here!
-            </span>
+            <span>No games found.</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {recentlyPlayed.map((game) => (
+            {filteredRecentlyPlayed.map((game) => (
               <GameCard
                 key={game.id}
                 game={game}
                 isFavorite={favorites.includes(game.id)}
                 onToggleFavorite={toggleFavorite}
                 onPlay={addRecentlyPlayed}
+                onCardClick={handleGameCardClick}
               />
             ))}
           </div>
         )}
         <div className="mt-4 text-right">
-          <a href="#" className="text-blue-600 hover:underline font-medium">
+          <Link
+            href="/recently-played"
+            className="text-blue-600 hover:underline font-medium"
+          >
             View All
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -283,15 +362,22 @@ export default function Home() {
       <section id="popular" className="max-w-5xl mx-auto w-full py-10 px-4">
         <h2 className="text-2xl font-bold mb-4">Popular Games</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {popularGames.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              isFavorite={favorites.includes(game.id)}
-              onToggleFavorite={toggleFavorite}
-              onPlay={addRecentlyPlayed}
-            />
-          ))}
+          {filteredPopularGames.length === 0 ? (
+            <div className="col-span-full text-center text-gray-500">
+              No games found.
+            </div>
+          ) : (
+            filteredPopularGames.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                isFavorite={favorites.includes(game.id)}
+                onToggleFavorite={toggleFavorite}
+                onPlay={addRecentlyPlayed}
+                onCardClick={handleGameCardClick}
+              />
+            ))
+          )}
         </div>
         <div className="mt-6 text-center">
           <Link
@@ -306,13 +392,29 @@ export default function Home() {
       {/* Browse by Category */}
       <section id="categories" className="max-w-5xl mx-auto w-full py-10 px-4">
         <h2 className="text-2xl font-bold mb-4">Browse by Category</h2>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {activeCategory && (
+            <button
+              className="bg-gray-200 text-gray-700 rounded-full px-4 py-1 text-sm font-medium hover:bg-gray-300 transition"
+              onClick={() => setActiveCategory("")}
+              type="button"
+            >
+              Clear Category
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {categories.map((cat) => (
             <button
               key={cat}
-              className="bg-white/60 rounded-lg shadow p-6 flex items-center justify-center text-lg font-semibold text-gray-700 hover:bg-blue-100 transition cursor-pointer w-full"
+              className={`bg-white/60 rounded-lg shadow p-6 flex items-center justify-center text-lg font-semibold w-full transition cursor-pointer border-2 ${
+                activeCategory === cat
+                  ? "border-blue-500 bg-blue-100"
+                  : "border-transparent hover:bg-blue-100"
+              }`}
               onClick={() => handleCategoryClick(cat)}
               type="button"
+              aria-pressed={activeCategory === cat}
             >
               {cat}
             </button>
@@ -323,21 +425,20 @@ export default function Home() {
       {/* Favorites */}
       <section id="favorites" className="max-w-5xl mx-auto w-full py-10 px-4">
         <h2 className="text-2xl font-bold mb-4">Favorites</h2>
-        {favoriteGames.length === 0 ? (
+        {filteredFavoriteGames.length === 0 ? (
           <div className="bg-white/60 rounded-xl shadow p-6 min-h-[120px] flex items-center justify-center text-gray-500">
-            <span>
-              No favorites yet. Click the heart on any game to add it here!
-            </span>
+            <span>No games found.</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {favoriteGames.map((game) => (
+            {filteredFavoriteGames.map((game) => (
               <GameCard
                 key={game.id}
                 game={game}
                 isFavorite={true}
                 onToggleFavorite={toggleFavorite}
                 onPlay={addRecentlyPlayed}
+                onCardClick={handleGameCardClick}
               />
             ))}
           </div>
@@ -432,6 +533,56 @@ export default function Home() {
               .
             </p>
             <p className="text-xs text-gray-500">Last updated: 2025</p>
+          </div>
+        </div>
+      )}
+
+      {/* Game Details Modal */}
+      {modalGame && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          aria-modal="true"
+          role="dialog"
+          tabIndex={-1}
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+            tabIndex={0}
+          >
+            <button
+              onClick={closeModal}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+              aria-label="Close game details"
+            >
+              ×
+            </button>
+            <Image
+              src={modalGame.thumb}
+              alt={modalGame.title}
+              className="w-full h-48 object-cover rounded mb-4"
+              width={384}
+              height={192}
+              unoptimized
+            />
+            <h2 className="text-2xl font-bold mb-2">{modalGame.title}</h2>
+            <p className="text-gray-700 mb-2">{modalGame.description}</p>
+            <div className="mb-2 text-sm text-gray-500">
+              <span className="font-semibold">Category:</span>{" "}
+              {modalGame.category}
+            </div>
+            <div className="mb-4 text-sm text-gray-500">
+              <span className="font-semibold">Tags:</span> {modalGame.tags}
+            </div>
+            <a
+              href={modalGame.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-semibold shadow hover:bg-blue-700 transition"
+            >
+              Play Now
+            </a>
           </div>
         </div>
       )}
