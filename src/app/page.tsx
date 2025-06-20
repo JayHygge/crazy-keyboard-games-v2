@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 // Type for a game
 interface Game {
@@ -191,6 +191,8 @@ export default function Home() {
       return games;
     });
   }
+
+  if (loading) return <div className="text-center py-10">Loading games...</div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">

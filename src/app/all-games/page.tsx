@@ -144,6 +144,8 @@ export default function AllGamesPage() {
     });
   }, [search, category, gamesData]);
 
+  if (loading) return <div className="text-center py-10">Loading games...</div>;
+
   return (
     <main className="min-h-screen bg-background text-foreground px-4 py-8 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">All Games</h1>

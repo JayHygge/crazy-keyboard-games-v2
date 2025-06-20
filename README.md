@@ -2,6 +2,8 @@
 
 A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and TypeScript. Features a glassmorphism design, instant play, and seamless user experience. Games are sourced from a local JSON feed (games.json) and require no backend.
 
+**v2 Portal is now live and deployed to Vercel!**
+
 ## Features
 
 - 🎮 **Instant Play**: 100+ keyboard and mouse games, playable instantly in your browser
@@ -15,6 +17,8 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 - 📝 **About & Contact**: Info and contact at the bottom of the homepage
 - ⚡ **Performance Optimized**: SSG, lazy loading, and image optimization
 - 🔒 **Privacy & Cookies**: Compliant privacy policy and cookie notice
+- 🗂️ **All Games Page**: Search, filter, favorite, and play all games in one place
+- ♿ **Accessibility**: Improved keyboard navigation and ARIA labels
 
 ## Homepage Layout
 
@@ -23,6 +27,7 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 - **Recently Played**: Up to 4 games, friendly empty state, View All button
 - **Popular Games**: 8 random games (2 rows of 4), View All button
 - **Browse by Category**: Category cards (no game count)
+- **Favorites**: Up to 8 favorite games, persistent in localStorage
 - **About & Contact**: At the bottom of the homepage
 - **Footer**: © 2025 Crazy Keyboard Games. All rights reserved.
 - **Privacy Policy**: Footer link (modal or page)
@@ -30,9 +35,15 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 
 ## Data Handling
 
-- All game data is managed in a local file (`games.json`)
+- All game data is managed in a local file (`games.json`) in the `/public` directory
+- Game data is loaded at runtime using `fetch('/games.json')` (not imported)
 - Recently played and favorites are stored in browser localStorage
 - No backend or user login required
+
+## Images
+
+- Game images currently use `<img>` for simplicity and compatibility
+- [TODO] Migrate to Next.js `<Image />` for best performance and LCP
 
 ## Getting Started
 
@@ -64,7 +75,7 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 
 ## Configuration
 
-- Place your `games.json` file in the `/public` or `/data` directory.
+- Place your `games.json` file in the `/public` directory.
 - Update About/Contact info in the homepage section as needed.
 - Privacy Policy and Cookie Notice are included by default.
 
