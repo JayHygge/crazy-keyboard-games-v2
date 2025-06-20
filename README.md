@@ -10,7 +10,7 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 - ✨ **Glassmorphism Design**: Modern, frosted glass UI with gradients and depth
 - 📱 **Fully Responsive**: Optimized for desktop and mobile
 - 🔍 **Live Search & Tag Filtering**: Quickly find games by name or category
-- 🕹️ **Recently Played**: Personalized section using localStorage
+- 🕹️ **Recently Played**: Personalized section using localStorage (homepage only)
 - ⭐ **Favorites**: Mark and revisit your favorite games (localStorage)
 - 🔄 **Popular Games**: 8 random games shown on each visit
 - 🗂️ **Browse by Category**: Explore games by category (no game count shown)
@@ -24,7 +24,7 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 
 - **Header**: Logo, navigation (Home, Recent, Popular Games, Categories), search bar
 - **Hero Banner**: Headline, subheadline, "100+ Games Available", Play Now button
-- **Recently Played**: Up to 4 games, friendly empty state, View All button
+- **Recently Played**: Up to 4 games, friendly empty state, View All button (homepage only)
 - **Popular Games**: 8 random games (2 rows of 4), View All button
 - **Browse by Category**: Category cards (no game count)
 - **Favorites**: Up to 8 favorite games, persistent in localStorage
@@ -44,6 +44,11 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 
 - Game images currently use `<img>` for simplicity and compatibility
 - [TODO] Migrate to Next.js `<Image />` for best performance and LCP
+
+## All Games Page
+
+- Search, filter, favorite, and play all games in one place
+- Does **not** show Recently Played (that is homepage only)
 
 ## Getting Started
 
@@ -83,6 +88,7 @@ A modern, beautiful HTML5 game portal built with Next.js 15+, Tailwind CSS, and 
 
 - Deploy to Vercel for best performance and zero-config Next.js hosting.
 - Environment variables are not required for basic operation.
+- **Codebase is clean and Vercel build passes.**
 
 ## Legal
 

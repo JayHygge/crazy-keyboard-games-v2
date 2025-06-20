@@ -75,7 +75,6 @@ export default function AllGamesPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [recentlyPlayed, setRecentlyPlayed] = useState<Game[]>([]);
   const [gamesData, setGamesData] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -90,15 +89,7 @@ export default function AllGamesPage() {
 
   useEffect(() => {
     setFavorites(JSON.parse(localStorage.getItem("favorites") || "[]"));
-    const ids = JSON.parse(
-      localStorage.getItem("recentlyPlayed") || "[]"
-    ) as string[];
-    const games = ids
-      .map((id) => gamesData.find((g) => g.id === id))
-      .filter(Boolean)
-      .slice(0, 4) as Game[];
-    setRecentlyPlayed(games);
-  }, [gamesData]);
+  }, []);
 
   useEffect(() => {
     fetch("/games.json")
@@ -116,21 +107,6 @@ export default function AllGamesPage() {
         : [...prev, id];
       localStorage.setItem("favorites", JSON.stringify(next));
       return next;
-    });
-  }
-
-  function addRecentlyPlayed(id: string) {
-    setRecentlyPlayed((prev) => {
-      const ids = [
-        id,
-        ...prev.map((g) => g.id).filter((gid) => gid !== id),
-      ].slice(0, 20);
-      localStorage.setItem("recentlyPlayed", JSON.stringify(ids));
-      const games = ids
-        .map((gid) => gamesData.find((g) => g.id === gid))
-        .filter(Boolean)
-        .slice(0, 4) as Game[];
-      return games;
     });
   }
 
@@ -177,7 +153,6 @@ export default function AllGamesPage() {
             game={game}
             isFavorite={favorites.includes(game.id)}
             onToggleFavorite={toggleFavorite}
-            onPlay={addRecentlyPlayed}
           />
         ))}
       </div>
